@@ -1,0 +1,54 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      NETLIFY_SITE_NAME: movie-visualizer
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.11.0'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Check if Netlify site exists
+        id: check_site
+        run: |
+          echo "Checking for existing Netlify site..."
+          SITE_ID=$(netlify sites:list --json --auth "$NETLIFY_AUTH_TOKEN" | jq -r ".[] | select(.name==\"$NETLIFY_SITE_NAME\") | .id")
+          if [ -z "$SITE_ID" ]; then
+            echo "Site not found, creating new site..."
+            SITE_ID=$(netlify sites:create --name "$NETLIFY_SITE_NAME" --json --auth "$NETLIFY_AUTH_TOKEN" | jq -r ".site_id")
+          else
+            echo "Site already exists."
+          fi
+          echo "site_id=$SITE_ID" >> $GITHUB_OUTPUT
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Deploy to Netlify
+        run: |
+          netlify deploy --prod --dir=dist \
+            --site=${{ steps.check_site.outputs.site_id }} \
+            --auth=$NETLIFY_AUTH_TOKEN
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
