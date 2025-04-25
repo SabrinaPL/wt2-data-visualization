@@ -1,5 +1,5 @@
-import { map, latLng, tileLayer, geoJSON } from 'leaflet'
-import type { MapOptions, GeoJSON } from 'leaflet'
+import { map, latLng, tileLayer } from 'leaflet' // TODO: Import geoJSON from leaflet
+import type { MapOptions } from 'leaflet' // TODO: Import GeoJSON types from leaflet
 
 // Setup code taken from source: 'https://docs.maptiler.com/leaflet/examples/ts-get-started/' and slightly tweaked
 export function initMap(containerId: string) {
