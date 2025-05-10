@@ -1,12 +1,10 @@
-// Use leaflet for map visualization?
-
 <script lang="ts" setup>
-  import { onMounted } from 'vue'
-  import { initMap } from '../services/mapService'
+   // import { onMounted } from 'vue'
+  // import { initMap } from '../../services/mapService'
 
-  onMounted(() => {
-    initMap('map')
-    })
+  // onMounted(() => {
+  //  initMap('map')
+  //  })
 </script>
 
 <template>
