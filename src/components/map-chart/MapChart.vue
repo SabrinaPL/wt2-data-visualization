@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-   // import { onMounted } from 'vue'
-  // import { initMap } from '../../services/mapService'
+  //  import { onMounted } from 'vue'
+  //  import { initMap } from '../../services/mapService'
 
   // onMounted(() => {
-  //  initMap('map')
-  //  })
+  //   initMap('map')
+  // })
 </script>
 
 <template>
@@ -15,18 +15,3 @@
     </div>
   </div>
 </template>
-
-<style>
-body {
-  margin: 0;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#map {
-    width: 100%;
-    height: 400px;
-}
-</style>

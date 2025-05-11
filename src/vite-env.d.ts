@@ -1,5 +1,5 @@
 interface ImportMetaEnv {
-  readonly VITE_MAPTILER_API_KEY: string;
+  readonly VITE_GENDER_STATISTICS_API_BASE_URL: string;
 }
 
 interface ImportMeta {
