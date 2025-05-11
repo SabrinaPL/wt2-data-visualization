@@ -1,14 +1,12 @@
 <script setup lang="ts">
-  import Dashboard from './Dashboard.vue'
-  import MapChart from '../components/map-chart/MapChart.vue'
-  import EChart from '../components/e-chart/EChart.vue'
+import Dashboard from "./Dashboard.vue"
+import MapChart from "../components/map-chart/MapChart.vue"
 </script>
 
 <template>
   <div class="landing-page">
     <Dashboard></Dashboard>
     <MapChart></MapChart>
-    <EChart></EChart>
   </div>
 </template>
 

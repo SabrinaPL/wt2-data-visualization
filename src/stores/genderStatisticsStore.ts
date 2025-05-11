@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import axios from 'axios'
+import { defineStore } from "pinia"
+import { GenderStatisticsService } from "../services/genderStatisticsService"
 
-export const useGenderStatisticsStore = defineStore('genderStatistics', {
+export const useGenderStatisticsStore = defineStore("genderStatistics", {
   state: () => ({
     // Cache the api response to avoid multiple requests
     countryGenderStatistics: {} as Record<string, any>,
@@ -11,30 +11,61 @@ export const useGenderStatisticsStore = defineStore('genderStatistics', {
     companyGenderStatistics: {} as Record<string, any>,
     isLoading: false,
     error: null as string | null,
-}),
+  }),
 
-actions: {
-  async fetchCountryGenderStatistics() {
-    // Check if the data is already cached
-    if (this.countryGenderStatistics.length > 0) {
-      console.log('Gender statistics for movie production countries have already been fetched and cached')
-      return
-    }
+  actions: {
+    async fetchCountryGenderStatistics() {
+      // Check if the data is already cached
+      if (this.countryGenderStatistics.length > 0) {
+        console.log(
+          "Gender statistics for movie production countries have already been fetched and cached"
+        );
+        return
+      }
 
-    this.isLoading = true
-    this.error = null
+      this.isLoading = true
+      this.error = null
 
-    try {
-      const response = await axios.get(import.meta.env.VITE_GENDER_STATISTICS_API_BASE_URL + '/country')
-      this.countryGenderStatistics = response.data
+      try {
+        const genderStatisticsService = new GenderStatisticsService()
 
-      console.log(response.data)
-    } catch (error) {
-      this.error = 'Failed to fetch gender statistics for movie production countries'
-      console.error('Error fetching gender statistics for movie production countries:', error)
-    } finally {
-      this.isLoading = false
-    }
+        const genderStatisticsByCountry = await genderStatisticsService.fetchCountryGenderStatistics()
+
+        this.countryGenderStatistics = genderStatisticsByCountry
+
+        console.log(genderStatisticsByCountry);
+      } catch (error) {
+        this.error =
+          "Failed to fetch gender statistics for movie production countries";
+        console.error(
+          "Error fetching gender statistics for movie production countries:",
+          error
+        )
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    getStatisticsByCountry(country: string) {
+      console.log("Fetching cached country data...")
+
+      // Check if the country data is already cached
+      const countryData = this.countryGenderStatistics.find(
+        (stat: any) => stat.country === country
+      )
+
+      console.log("Country data:", countryData);
+
+      if (countryData) {
+        return countryData;
+      } else {
+        console.error(
+          "Gender statistics for the specified country are not available"
+        )
+        throw new Error(
+          "Gender statistics for the specified country are not available"
+        )
+      }
+    },
   },
-}
 })
