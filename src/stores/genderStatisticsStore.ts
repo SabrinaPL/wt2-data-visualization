@@ -14,11 +14,10 @@ export const useGenderStatisticsStore = defineStore('genderStatistics', {
 }),
 
 actions: {
-  async fetchGenderStatisticsByCountry(country: string) {
-    console.log('hello from fetchGenderStatisticsByCountry')
+  async fetchCountryGenderStatistics() {
     // Check if the data is already cached
-    if (this.countryGenderStatistics[country]) {
-      console.log('Data already cached for country:', country)
+    if (this.countryGenderStatistics.length > 0) {
+      console.log('Gender statistics for movie production countries have already been fetched and cached')
       return
     }
 
@@ -26,15 +25,13 @@ actions: {
     this.error = null
 
     try {
-      const response = await axios.get(import.meta.env.VITE_GENDER_STATISTICS_API_BASE_URL + '/country', {
-        params: { country },
-      })
-      this.countryGenderStatistics[country] = response.data
+      const response = await axios.get(import.meta.env.VITE_GENDER_STATISTICS_API_BASE_URL + '/country')
+      this.countryGenderStatistics = response.data
 
       console.log(response.data)
     } catch (error) {
-      this.error = 'Failed to fetch statistics by country'
-      console.error('Error fetching statistics by country:', error)
+      this.error = 'Failed to fetch gender statistics for movie production countries'
+      console.error('Error fetching gender statistics for movie production countries:', error)
     } finally {
       this.isLoading = false
     }
