@@ -44,7 +44,7 @@ onMounted(() => {
     chartInstance = echarts.init(mapRef.value);
 
     // Register the world map
-    echarts.registerMap('world', worldJson);
+    echarts.registerMap('world', worldJson as any);
 
     // Map country codes to coordinates (example coordinates for simplicity)
     const countryCoordinates: Record<string, [number, number]> = {
