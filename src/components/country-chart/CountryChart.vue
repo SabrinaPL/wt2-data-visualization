@@ -1,29 +1,28 @@
 <script lang="ts" setup>
 import * as echarts from 'echarts';
 import { ref, onMounted, watch } from 'vue';
-import { countryCodes, getCountryNameByCode } from '../../data/countryCodes';
+import { countryCodes, getCountryNameByCode } from '../../utils/mapCountryCodes';
+import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
+import type { GenderStatistics } from '../../data/types';
 
 // Reference to the pie chart container
 const chartRef = ref<HTMLDivElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
 // Reactive variables for country selection and data
-const selectedCountry = ref<string>('USA'); // Default selected country
-const countryData = ref<Record<string, { gender: string; value: number }[]>>({
-  USA: [
-    { gender: 'Male', value: 60 },
-    { gender: 'Female', value: 40 },
-  ],
-  France: [
-    { gender: 'Male', value: 55 },
-    { gender: 'Female', value: 45 },
-  ],
-  Japan: [
-    { gender: 'Male', value: 70 },
-    { gender: 'Female', value: 30 },
-  ],
-});
+const selectedCountry = ref<string>('US'); // Default selected country
+const countryData = ref<Record<string, { gender: string; value: number }[]>>({});
 
+const genderStatisticsStore = useGenderStatisticsStore();
+
+async function fetchDataForSelectedCountry() {
+  await genderStatisticsStore.fetchCountryGenderStatistics();
+
+  countryData.value = genderStatisticsStore.getStatisticsByCountry(selectedCountry.value);
+
+  console.log('Country data for selected country:', countryData.value);
+}
+ 
 // Pie Chart (inspired by example code from: https://echarts.apache.org/examples/en/editor.html?c=pie-simple&lang=ts)
 function updateChart() {
   if (chartInstance && chartRef.value) {
@@ -64,27 +63,30 @@ function updateChart() {
 }
 
 // Initialize the chart
-onMounted(() => {
+onMounted(async () => {
   if (chartRef.value) {
     chartInstance = echarts.init(chartRef.value);
-    updateChart();
   }
+
+  await fetchDataForSelectedCountry();
+  updateChart();
 });
 
 // Watch for changes in the selected country and update the chart
-watch(selectedCountry, () => {
+watch(selectedCountry, async () => {
+  await fetchDataForSelectedCountry();
   updateChart();
 });
 </script>
 
 <template>
   <div class="country-chart">
-    <h1 class="text-xl font-bold text-center mb-4">Movie Production Country</h1>
+    <h1 class="title">Movie Production Country</h1>
 
     <!-- Dropdown for selecting a country -->
-    <div class="country-selector text-center mb-4">
-      <label for="country" class="mr-2">Select a Country by Country Code:</label>
-      <select id="country" v-model="selectedCountry" class="border rounded px-2 py-1">
+    <div class="country-selector">
+      <label for="country" class="country-selector">Select a Country by Country Code:</label>
+      <select id="country" v-model="selectedCountry">
         <option v-for="code in countryCodes" :key="code" :value="code">
           {{ code }}
         </option>
@@ -101,6 +103,20 @@ watch(selectedCountry, () => {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+}
+
+.title {
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.country-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .country-selector select {
