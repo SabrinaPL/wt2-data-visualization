@@ -3,6 +3,7 @@ import * as echarts from 'echarts';
 import worldJson from '../../public/map/world.json';
 import countryCoordinates from '../../../countryCoordinates.json';
 import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
+import type { GenderStatistics } from '../../data/types';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 // Reference to the map container
@@ -46,13 +47,20 @@ onMounted(async () => {
   // TODO:
   // Log the cached data from the store
   console.log('Cached country gender data: ', genderStatisticsStore.countryGenderStatistics);
-  
-// Example data for gender statistics by country
-const genderStatistics = [
-  { country: 'AU', genderData: [{ gender: 'male', value: 60 }, { gender: 'female', value: 40 }] },
-  { country: 'FR', genderData: [{ gender: 'male', value: 55 }, { gender: 'female', value: 45 }] },
-  { country: 'JP', genderData: [{ gender: 'male', value: 70 }, { gender: 'female', value: 30 }] },
-];
+
+  // TODO: loop through the gender statistics data and map it to the country coordinates
+  // Transform the data to match the genderStatistics format (as suggested by copilot)
+  const genderStatistics: GenderStatistics[] = genderStatisticsStore.countryGenderStatistics
+  .filter((stat: { country: string }) => countryCoordinates[stat.country as keyof typeof countryCoordinates]) // Ensure the country code exists in the coordinates
+  .map((stat: { country: string; breakdown: { gender: number; percentage: number }[] }) => ({
+    country: stat.country,
+    genderData: stat.breakdown.map((item) => ({
+      gender: item.gender === 0 ? 'men' : item.gender === 1 ? 'women' : 'undefined', // Map gender codes to labels
+      value: item.percentage,
+    })),
+  }));
+
+console.log('Mapped Gender Statistics:', genderStatistics);
 
   if (mapRef.value) {
     chartInstance = echarts.init(mapRef.value);
