@@ -1,1 +1,0 @@
-// Add a search bar to sort/filter companies by gender?

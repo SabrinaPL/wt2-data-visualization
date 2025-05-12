@@ -1,58 +1,98 @@
 <script lang="ts" setup>
-import * as echarts from 'echarts';
-import { ref, onMounted, watch } from 'vue';
-import { countryCodes, getCountryNameByCode } from '../../utils/mapCountryCodes';
-import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
-import type { GenderStatistics } from '../../data/types';
+import * as echarts from "echarts";
+import { ref, onMounted, watch } from "vue";
+import {
+  countryCodes,
+  getCountryNameByCode,
+} from "../../utils/mapCountryCodes";
+import { useGenderStatisticsStore } from "../../stores/genderStatisticsStore";
 
 // Reference to the pie chart container
 const chartRef = ref<HTMLDivElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
-// Reactive variables for country selection and data
-const selectedCountry = ref<string>('US'); // Default selected country
-const countryData = ref<Record<string, { gender: string; value: number }[]>>({});
+// Reactive variables
+const countryData = ref<Record<string, { gender: string; value: number }[]>>(
+  {}
+);
+const selectedViewMode = ref("count"); // Default view mode ('count' or 'percentage')
 
 const genderStatisticsStore = useGenderStatisticsStore();
+
+// Map gender codes to labels
+const genderMapping: Record<number, string> = {
+  0: "undefined",
+  1: "women",
+  2: "men",
+};
+
+const genderColors: Record<string, string> = {
+  men: "#2471A3",
+  women: "#2ECC71",
+  undefined: "#F4D03F",
+};
+
+const isLoading = ref(true);
 
 async function fetchDataForSelectedCountry() {
   await genderStatisticsStore.fetchCountryGenderStatistics();
 
-  countryData.value = genderStatisticsStore.getStatisticsByCountry(genderStatisticsStore.selectedCountry);
+  const rawData = genderStatisticsStore.getStatisticsByCountry(
+    genderStatisticsStore.selectedCountry
+  );
 
-  console.log('Country data for selected country:', countryData.value);
+  if (!rawData || !rawData.breakdown) {
+    console.error(
+      "No data available for the selected country:",
+      genderStatisticsStore.selectedCountry
+    );
+    countryData.value = {};
+    return;
+  }
+
+  // Transform the breakdown data
+  countryData.value = rawData.breakdown.map(
+    (item: { gender: number; count: number; percentage: number }) => ({
+      gender: genderMapping[item.gender],
+      value: selectedViewMode.value === "count" ? item.count : item.percentage,
+    })
+  );
+
+  console.log("Country data for selected country:", countryData.value);
 }
- 
+
 // Pie Chart (inspired by example code from: https://echarts.apache.org/examples/en/editor.html?c=pie-simple&lang=ts)
 function updateChart() {
   if (chartInstance && chartRef.value) {
-    const data = countryData.value[selectedCountry.value] || [];
     const option: echarts.EChartsOption = {
       title: {
         text: `Gender Distribution in ${getCountryNameByCode(genderStatisticsStore.selectedCountry)}`,
-        left: 'center',
+        left: "center",
       },
       tooltip: {
-        trigger: 'item',
+        trigger: "item",
       },
       legend: {
-        bottom: '10%',
-        left: 'center',
+        bottom: "10%",
+        left: "center",
       },
       series: [
         {
-          name: 'Gender Distribution',
-          type: 'pie',
-          radius: '50%',
-          data: data.map((item) => ({
+          name: "Gender Distribution",
+          type: "pie",
+          radius: "50%",
+          data: countryData.value.map((item) => ({
             value: item.value,
             name: item.gender,
+            itemStyle: {
+              color: genderColors[item.gender],
+            },
           })),
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
               shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)',
+              shadowColor: "rgba(0, 0, 0, 0.5)",
             },
           },
         },
@@ -64,17 +104,21 @@ function updateChart() {
 
 // Initialize the chart
 onMounted(async () => {
+  isLoading.value = true;
+
   if (chartRef.value) {
     chartInstance = echarts.init(chartRef.value);
   }
 
   await fetchDataForSelectedCountry();
   updateChart();
+
+  isLoading.value = false;
 });
 
 // Watch for changes in the selected country and update the chart
 watch(
-  () => genderStatisticsStore.selectedCountry, 
+  [() => genderStatisticsStore.selectedCountry, () => selectedViewMode.value],
   async () => {
     await fetchDataForSelectedCountry();
     updateChart();
@@ -88,7 +132,9 @@ watch(
 
     <!-- Dropdown for selecting a country -->
     <div class="country-selector">
-      <label for="country" class="country-selector">Select a Country by Country Code:</label>
+      <label for="country" class="country-selector"
+        >Select a Country by Country Code:</label
+      >
       <select id="country" v-model="genderStatisticsStore.selectedCountry">
         <option v-for="code in countryCodes" :key="code" :value="code">
           {{ code }}
@@ -96,8 +142,21 @@ watch(
       </select>
     </div>
 
+    <div class="view-mode-selector">
+      <label for="view-mode" class="view-mode-selector">View Mode:</label>
+      <select id="view-mode" v-model="selectedViewMode">
+        <option value="count">Count</option>
+        <option value="percentage">%</option>
+      </select>
+    </div>
+
+    <!-- Show "Loading..." while map is loading -->
+    <div v-if="isLoading" class="loading">
+      <p>Loading pie chart...</p>
+    </div>
+
     <!-- Pie chart container -->
-    <div ref="chartRef" style="width: 100%; height: 400px;"></div>
+    <div ref="chartRef" style="width: 100%; height: 400px"></div>
   </div>
 </template>
 
@@ -115,7 +174,16 @@ watch(
   margin-bottom: 20px;
 }
 
-.country-selector {
+.loading {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0098d9;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.country-selector,
+.view-mode-selector {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -126,11 +194,3 @@ watch(
   font-size: 1rem;
 }
 </style>
-
-
-<!-- // Colors for the pie charts
-const genderColors: Record<string, string> = {
-  men: '#2471A3',
-  women: '#2ECC71',
-  undefined: '#F4D03F', 
-} -->

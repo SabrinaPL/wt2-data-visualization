@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
 
     <!-- Show "Loading..." while map is loading -->
     <div v-if="isLoading" class="loading">
-      <p>Loading...</p>
+      <p>Loading map...</p>
     </div>
 
     <!-- Map container -->
