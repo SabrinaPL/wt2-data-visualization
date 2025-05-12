@@ -45,7 +45,7 @@ async function fetchYearData() {
         undefined: undefinedGender,
       };
     })
-    .sort((a, b) => parseInt(a.year) - parseInt(b.year)); // Sort by year (as suggested by copilot)
+    .sort((a: any, b: any) => parseInt(a.year) - parseInt(b.year)); // Sort by year (as suggested by copilot)
 
   // Initially, show all data
   filteredYearData.value = yearData.value;
