@@ -1,22 +1,17 @@
 <script lang="ts" setup>
 import * as echarts from 'echarts';
 import worldJson from '../../public/map/world.json';
+import countryCoordinates from '../../../countryCoordinates.json';
 import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
-// 
 // Reference to the map container
 const mapRef = ref<HTMLDivElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
 const genderStatisticsStore = useGenderStatisticsStore();
 
-// Example data for gender statistics by country
-const genderStatistics = [
-  { country: 'US', genderData: [{ gender: 'male', value: 60 }, { gender: 'female', value: 40 }] },
-  { country: 'FR', genderData: [{ gender: 'male', value: 55 }, { gender: 'female', value: 45 }] },
-  { country: 'JP', genderData: [{ gender: 'male', value: 70 }, { gender: 'female', value: 30 }] },
-];
+const isLoading = ref(true);
 
 // Function to create pie series for each country (inspired by example code from: https://echarts.apache.org/examples/en/editor.html?c=map-usa-pie&lang=ts)
 function createPieSeries(center: [number, number], radius: number, data: any[]): echarts.PieSeriesOption {
@@ -43,12 +38,21 @@ function createPieSeries(center: [number, number], radius: number, data: any[]):
 
 // Initialize the map chart
 onMounted(async () => {
+  isLoading.value = true; 
+
   // Fetch the gender statistics data via the service class
   await genderStatisticsStore.fetchCountryGenderStatistics();
 
-  // TODO: remove later
+  // TODO:
   // Log the cached data from the store
   console.log('Cached country gender data: ', genderStatisticsStore.countryGenderStatistics);
+  
+// Example data for gender statistics by country
+const genderStatistics = [
+  { country: 'AU', genderData: [{ gender: 'male', value: 60 }, { gender: 'female', value: 40 }] },
+  { country: 'FR', genderData: [{ gender: 'male', value: 55 }, { gender: 'female', value: 45 }] },
+  { country: 'JP', genderData: [{ gender: 'male', value: 70 }, { gender: 'female', value: 30 }] },
+];
 
   if (mapRef.value) {
     chartInstance = echarts.init(mapRef.value);
@@ -56,35 +60,16 @@ onMounted(async () => {
     // Register the world map
     echarts.registerMap('world', worldJson as any);
 
-    // Map country codes to coordinates
-    const countryCoordinates: Record<string, [number, number]> = {
-      BE: [4.469936, 50.503887], // Belgium
-      ES: [-3.70379, 40.416775], // Spain
-      IR: [53.688046, 32.427908], // Iran
-      DE: [10.451526, 51.165691], // Germany
-      CA: [-106.346771, 56.130366], // Canada
-      CH: [8.227512, 46.818188], // Switzerland
-      IT: [12.56738, 41.87194], // Italy
-      CN: [104.195397, 35.86166], // China
-      FR: [2.213749, 46.227638], // France
-      JP: [138.252924, 36.204824], // Japan
-      ZA: [22.937506, -30.559482], // South Africa
-      NL: [5.291266, 52.132633], // Netherlands
-      US: [-95.712891, 37.09024], // United States
-      AU: [133.775136, -25.274398], // Australia
-      GB: [-3.435973, 55.378051], // United Kingdom
-    };
-
     // Create pie series for each country
     const series = genderStatistics
       .map((stat) => {
-        const coordinates = countryCoordinates[stat.country];
-        if (coordinates) {
-          return createPieSeries(coordinates, 10, stat.genderData);
+        const coordinates = countryCoordinates[stat.country as keyof typeof countryCoordinates];
+        if (Array.isArray(coordinates) && coordinates.length == 2) {
+          return createPieSeries(coordinates as [number, number], 10, stat.genderData);
         }
         return null;
       })
-      .filter((item): item is echarts.PieSeriesOption => item !== null); // Type assertion
+      .filter((item): item is echarts.PieSeriesOption => item !== null); // Type assertion to filter out null values
 
     // Set the chart options
     const option: echarts.EChartsOption = {
@@ -97,7 +82,7 @@ onMounted(async () => {
         },
         emphasis: {
           itemStyle: {
-            areaColor: '#a1d3f5',
+            areaColor: '#DAF7A6',
           },
         },
       },
@@ -107,6 +92,17 @@ onMounted(async () => {
 
     chartInstance.setOption(option);
   }
+
+  // Event listener for click events on the map
+  chartInstance?.on('click', (params) => {
+    if (params.componentType === 'geo') {
+      const countryName = params.name;
+      // TODO: map country name to country code - chart modal to pop up with country statistics when country is clicked?
+      console.log('Clicked country:', countryName);
+    }
+  })
+
+  isLoading.value = false; // Set loading to false after the chart is initialized
 });
 
 // Dispose of the chart instance on unmount
@@ -119,7 +115,14 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="map-chart">
-    <h1>World Map - Movie Gender Data</h1>
+    <h1 id="country-title">Gender Distribution by Production Country</h1>
+
+    <!-- Show "Loading..." while map is loading -->
+    <div v-if="isLoading" class="loading">
+      <p>Loading...</p>
+    </div>
+
+    <!-- Map container -->
     <div id="map" ref="mapRef" style="width: 100%; height: 500px;"></div>
   </div>
 </template>
@@ -128,5 +131,20 @@ onBeforeUnmount(() => {
 .map-chart {
   width: 100%;
   height: 100%;
+}
+
+.loading {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0098d9;
+  margin-top: 20px;
+  text-align: center;
+}
+
+#country-title {
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
 }
 </style>
