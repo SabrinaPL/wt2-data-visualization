@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import * as echarts from 'echarts';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
 
 const chartRef = ref<HTMLDivElement | null>(null);
@@ -8,8 +8,19 @@ let chartInstance: echarts.ECharts | null = null;
 
 const genderStatisticsStore = useGenderStatisticsStore();
 const yearData = ref<{ year: string; men: number; women: number; undefined: number }[]>([]);
+const filteredYearData = ref<{ year: string; men: number; women: number; undefined: number }[]>([]);
 
 const isLoading = ref(true);
+const selectedInterval = ref<string>('all'); // Default interval
+
+const intervals = [
+  { label: 'All Years', value: 'all' },
+  { label: '1970-1980', value: '1970-1980' },
+  { label: '1981-1990', value: '1981-1990' },
+  { label: '1991-2000', value: '1991-2000' },
+  { label: '2001-2010', value: '2001-2010' },
+  { label: '2011-2020', value: '2011-2020' },
+];
 
 async function fetchYearData() {
   await genderStatisticsStore.fetchYearGenderStatistics();
@@ -25,16 +36,19 @@ async function fetchYearData() {
 
       const men = breakdown.find((entry: any) => entry.gender === 2)?.count || 0;
       const women = breakdown.find((entry: any) => entry.gender === 1)?.count || 0;
-      const undefined = breakdown.find((entry: any) => entry.gender === 0)?.count || 0;
+      const undefinedGender = breakdown.find((entry: any) => entry.gender === 0)?.count || 0;
 
       return {
         year: item.year,
         men,
         women,
-        undefined,
+        undefined: undefinedGender,
       };
     })
-    .sort((a: any, b: any) => parseInt(a.year) - parseInt(b.year)); // Sort by year (as suggested by copilot)
+    .sort((a, b) => parseInt(a.year) - parseInt(b.year)); // Sort by year (as suggested by copilot)
+
+  // Initially, show all data
+  filteredYearData.value = yearData.value;
 }
 
 function updateChart() {
@@ -58,7 +72,7 @@ function updateChart() {
       },
       xAxis: {
         type: 'category',
-        data: yearData.value.map((item) => item.year),
+        data: filteredYearData.value.map((item) => item.year),
       },
       yAxis: {
         type: 'value',
@@ -68,7 +82,7 @@ function updateChart() {
         {
           name: 'Men',
           type: 'bar',
-          data: yearData.value.map((item) => item.men),
+          data: filteredYearData.value.map((item) => item.men),
           itemStyle: {
             color: '#2471A3',
           },
@@ -76,7 +90,7 @@ function updateChart() {
         {
           name: 'Women',
           type: 'bar',
-          data: yearData.value.map((item) => item.women),
+          data: filteredYearData.value.map((item) => item.women),
           itemStyle: {
             color: '#2ECC71',
           },
@@ -84,7 +98,7 @@ function updateChart() {
         {
           name: 'Undefined',
           type: 'bar',
-          data: yearData.value.map((item) => item.undefined),
+          data: filteredYearData.value.map((item) => item.undefined),
           itemStyle: {
             color: '#F4D03F',
           },
@@ -92,7 +106,7 @@ function updateChart() {
         {
           name: 'Total',
           type: 'line',
-          data: yearData.value.map((item) => item.men + item.women + item.undefined),
+          data: filteredYearData.value.map((item) => item.men + item.women + item.undefined),
           itemStyle: {
             color: '#E74C3C',
           },
@@ -103,6 +117,21 @@ function updateChart() {
     chartInstance.setOption(option);
   }
 }
+
+// Watch for changes in the selected interval and filter the data
+watch(selectedInterval, (newInterval) => {
+  if (newInterval === 'all') {
+    filteredYearData.value = yearData.value;
+  } else {
+    const [startYear, endYear] = newInterval.split('-').map(Number);
+    filteredYearData.value = yearData.value.filter(
+      (item) => parseInt(item.year) >= startYear && parseInt(item.year) <= endYear
+    );
+  }
+
+  // Update the chart with the filtered data
+  updateChart();
+});
 
 onMounted(async () => {
   isLoading.value = true;
@@ -121,6 +150,16 @@ onMounted(async () => {
 <template>
   <div class="year-chart">
     <h1 class="title">Movie Production Year</h1>
+
+    <!-- Dropdown for selecting year interval -->
+    <div class="interval-selector">
+      <label for="interval">Select Year Interval:</label>
+      <select id="interval" v-model="selectedInterval">
+        <option v-for="interval in intervals" :key="interval.value" :value="interval.value">
+          {{ interval.label }}
+        </option>
+      </select>
+    </div>
 
     <!-- Show "Loading..." while chart is loading -->
     <div v-if="isLoading" class="loading">
