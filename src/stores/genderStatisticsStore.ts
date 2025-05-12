@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { GenderStatisticsService } from "../services/genderStatisticsService";
+import { getCountryCodeByName } from '../utils/mapCountryCodes';
 
 const genderStatisticsService = new GenderStatisticsService();
 
@@ -11,6 +12,7 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
       yearGenderStatistics: {} as Record<string, any>,
       genreGenderStatistics: {} as Record<string, any>,
       companyGenderStatistics: {} as Record<string, any>,
+      selectedCountry: 'US', // Default country
       isLoading: false,
       error: null as string | null,
     }),
@@ -65,6 +67,13 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
             "Gender statistics for the specified country are not available"
           );
         }
+      },
+
+      setSelectedCountry(country: string) {
+        const countryCode = getCountryCodeByName(country) || '';
+        console.log("Country code:", countryCode);
+        this.selectedCountry = countryCode;
+        console.log("Selected country code:", this.selectedCountry);
       },
     },
   });

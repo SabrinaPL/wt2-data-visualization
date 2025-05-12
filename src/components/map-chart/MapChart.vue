@@ -53,7 +53,6 @@ onMounted(async () => {
   // Fetch the gender statistics data via the service class
   await genderStatisticsStore.fetchCountryGenderStatistics();
 
-  // TODO:
   // Log the cached data from the store
   console.log('Cached country gender data: ', genderStatisticsStore.countryGenderStatistics);
 
@@ -113,8 +112,10 @@ console.log('Mapped Gender Statistics:', genderStatistics);
   chartInstance?.on('click', (params) => {
     if (params.componentType === 'geo') {
       const countryName = params.name;
-      // TODO: map country name to country code - chart modal to pop up with country statistics when country is clicked?
       console.log('Clicked country:', countryName);
+
+      // Update the selected country in the store
+      genderStatisticsStore.setSelectedCountry(countryName);
     }
   })
 

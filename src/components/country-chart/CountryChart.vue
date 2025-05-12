@@ -18,7 +18,7 @@ const genderStatisticsStore = useGenderStatisticsStore();
 async function fetchDataForSelectedCountry() {
   await genderStatisticsStore.fetchCountryGenderStatistics();
 
-  countryData.value = genderStatisticsStore.getStatisticsByCountry(selectedCountry.value);
+  countryData.value = genderStatisticsStore.getStatisticsByCountry(genderStatisticsStore.selectedCountry);
 
   console.log('Country data for selected country:', countryData.value);
 }
@@ -29,7 +29,7 @@ function updateChart() {
     const data = countryData.value[selectedCountry.value] || [];
     const option: echarts.EChartsOption = {
       title: {
-        text: `Gender Distribution in ${getCountryNameByCode(selectedCountry.value)}`,
+        text: `Gender Distribution in ${getCountryNameByCode(genderStatisticsStore.selectedCountry)}`,
         left: 'center',
       },
       tooltip: {
@@ -73,10 +73,13 @@ onMounted(async () => {
 });
 
 // Watch for changes in the selected country and update the chart
-watch(selectedCountry, async () => {
-  await fetchDataForSelectedCountry();
-  updateChart();
-});
+watch(
+  () => genderStatisticsStore.selectedCountry, 
+  async () => {
+    await fetchDataForSelectedCountry();
+    updateChart();
+  }
+);
 </script>
 
 <template>
@@ -86,7 +89,7 @@ watch(selectedCountry, async () => {
     <!-- Dropdown for selecting a country -->
     <div class="country-selector">
       <label for="country" class="country-selector">Select a Country by Country Code:</label>
-      <select id="country" v-model="selectedCountry">
+      <select id="country" v-model="genderStatisticsStore.selectedCountry">
         <option v-for="code in countryCodes" :key="code" :value="code">
           {{ code }}
         </option>
