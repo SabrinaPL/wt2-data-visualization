@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import Dashboard from "./Dashboard.vue"
-import MapChart from "../components/map-chart/MapChart.vue"
+import Dashboard from "./Dashboard.vue";
+import MapChart from "../components/map-chart/MapChart.vue";
+import CountryChart from "../components/country-chart/CountryChart.vue";
 </script>
 
 <template>
   <div class="landing-page">
     <Dashboard></Dashboard>
-    <MapChart></MapChart>
+    <div class="charts-container">
+      <MapChart></MapChart>
+      <CountryChart></CountryChart>
+    </div>
   </div>
 </template>
 
@@ -15,6 +19,13 @@ import MapChart from "../components/map-chart/MapChart.vue"
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px; /* Add spacing between components */
+}
+
+.charts-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
 }
 </style>

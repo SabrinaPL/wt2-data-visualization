@@ -16,6 +16,12 @@ const isLoading = ref(true);
 
 // Function to create pie series for each country (inspired by example code from: https://echarts.apache.org/examples/en/editor.html?c=map-usa-pie&lang=ts)
 function createPieSeries(center: [number, number], radius: number, data: any[]): echarts.PieSeriesOption {
+  const genderColors: Record<string, string> = {
+    men: '#2471A3',
+    women: '#2ECC71',
+    undefined: '#F4D03F', 
+  }
+
   return {
     type: 'pie',
     coordinateSystem: 'geo',
@@ -33,6 +39,9 @@ function createPieSeries(center: [number, number], radius: number, data: any[]):
     data: data.map((item) => ({
       value: item.value,
       name: item.gender,
+      itemStyle: {
+        color: genderColors[item.gender],
+      }
     })),
   };
 }
@@ -48,7 +57,6 @@ onMounted(async () => {
   // Log the cached data from the store
   console.log('Cached country gender data: ', genderStatisticsStore.countryGenderStatistics);
 
-  // TODO: loop through the gender statistics data and map it to the country coordinates
   // Transform the data to match the genderStatistics format (as suggested by copilot)
   const genderStatistics: GenderStatistics[] = genderStatisticsStore.countryGenderStatistics
   .filter((stat: { country: string }) => countryCoordinates[stat.country as keyof typeof countryCoordinates]) // Ensure the country code exists in the coordinates
@@ -123,7 +131,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="map-chart">
-    <h1 id="country-title">Gender Distribution by Production Country</h1>
+    <h1 id="country-title">Map of Gender Equality by Production Country</h1>
 
     <!-- Show "Loading..." while map is loading -->
     <div v-if="isLoading" class="loading">
