@@ -1,0 +1,1 @@
+// TODO: add pie chart as a modal when clicking on a country, for better view of statistics

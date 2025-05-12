@@ -33,8 +33,6 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
             await genderStatisticsService.fetchCountryGenderStatistics();
 
           this.countryGenderStatistics = genderStatisticsByCountry;
-
-          console.log(genderStatisticsByCountry);
         } catch (error) {
           this.error =
             "Failed to fetch gender statistics for movie production countries";
