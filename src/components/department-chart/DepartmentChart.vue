@@ -22,4 +22,7 @@ const departmentData = ref<{ men: number; women: number; undefined: number }>({
 
 const isLoading = ref(true);
 
-
+// Fetch and transform data for the selected department
+async function fetchDepartmentData() {
+  await genderStatisticsStore.fetchDepartmentGenderStatistics();
+}

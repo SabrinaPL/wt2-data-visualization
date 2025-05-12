@@ -121,5 +121,53 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
           );
         }
       },
+
+      async fetchDepartmentGenderStatistics() {
+        // Check if the data is already cached
+        if (this.departmentGenderStatistics.length > 0) {
+          console.log(
+            "Department statistics have already been fetched and cached"
+          );
+          return;
+        }
+
+        this.isLoading = true;
+        this.error = null;
+
+        try {
+          const genderStatisticsByDepartment =
+            await genderStatisticsService.fetchDepartmentGenderStatistics();
+
+          this.departmentGenderStatistics = genderStatisticsByDepartment;
+        } catch (error) {
+          this.error =
+          "Failed to fetch gender statistics for movie departments";
+          console.error("Error fetching department statistics:", error);
+        } finally {
+          this.isLoading = false;
+        }
+      },
+
+      getStatisticsByDepartment(department: string) {
+        console.log("Fetching department data...");
+
+        // Check if the department data is already cached
+        const departmentData = this.departmentGenderStatistics.find(
+          (stat: any) => stat.department === department
+        );
+
+        console.log("Department data:", departmentData);
+
+        if (departmentData) {
+          return departmentData;
+        } else {
+          console.error(
+            "Failed to fetch department statistics for the specified department"
+          );
+          throw new Error(
+            "Failed to fetch department statistics for the specified department"
+          );
+        }
+      }
     },
   });
