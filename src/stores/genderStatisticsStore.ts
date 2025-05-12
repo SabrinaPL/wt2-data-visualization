@@ -48,7 +48,7 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
       },
 
       getStatisticsByCountry(country: string) {
-        console.log("Fetching cached country data...");
+        console.log("Fetching country data...");
 
         // Check if the country data is already cached
         const countryData = this.countryGenderStatistics.find(
@@ -74,6 +74,52 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
         console.log("Country code:", countryCode);
         this.selectedCountry = countryCode;
         console.log("Selected country code:", this.selectedCountry);
+      },
+
+      async fetchGenreGenderStatistics() {
+        // Check if the data is already cached
+        if (this.genreGenderStatistics.length > 0) {
+          console.log("Genre statistics have already been fetched and cached");
+          return;
+        }
+
+        this.isLoading = true;
+        this.error = null;
+
+        try {
+          const genderStatisticsByGenre =
+            await genderStatisticsService.fetchGenreGenderStatistics();
+
+          this.genreGenderStatistics = genderStatisticsByGenre;
+        } catch (error) {
+          this.error =
+            "Failed to fetch gender statistics for movie genres";
+          console.error("Error fetching genre statistics:", error);
+        } finally {
+          this.isLoading = false;
+        }
+      },
+
+      getStatisticsByGenre(genre: string) {
+        console.log("Fetching genre data...");
+
+        // Check if the genre data is already cached
+        const genreData = this.genreGenderStatistics.find(
+          (stat: any) => stat.genre === genre
+        );
+
+        console.log("Genre data:", genreData);
+
+        if (genreData) {
+          return genreData;
+        } else {
+          console.error(
+            "Failed to fetch genre statistics for the specified genre"
+          );
+          throw new Error(
+            "Failed to fetch genre statistics for the specified genre"
+          );
+        }
       },
     },
   });
