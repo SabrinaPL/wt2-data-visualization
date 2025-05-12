@@ -168,6 +168,54 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
             "Failed to fetch department statistics for the specified department"
           );
         }
-      }
+      },
+
+      async fetchCompanyGenderStatistics() {
+        // Check if the data is already cached
+        if (this.companyGenderStatistics.length > 0) {
+          console.log(
+            "Company statistics have already been fetched and cached"
+          );
+          return;
+        }
+
+        this.isLoading = true;
+        this.error = null;
+
+        try {
+          const genderStatisticsByCompany =
+            await genderStatisticsService.fetchCompanyGenderStatistics();
+
+          this.companyGenderStatistics = genderStatisticsByCompany;
+        } catch (error) {
+          this.error =
+          "Failed to fetch gender statistics for movie companies";
+          console.error("Error fetching company statistics:", error);
+        } finally {
+          this.isLoading = false;
+        }
+      },
+
+      getStatisticsByCompany(company: string) {
+        console.log("Fetching company data...");
+
+        // Check if the company data is already cached
+        const companyData = this.companyGenderStatistics.find(
+          (stat: any) => stat.company === company
+        );
+
+        console.log("Company data:", companyData);
+
+        if (companyData) {
+          return companyData;
+        } else {
+          console.error(
+            "Failed to fetch company statistics for the specified company"
+          );
+          throw new Error(
+            "Failed to fetch company statistics for the specified company"
+          );
+        }
+      },
     },
   });

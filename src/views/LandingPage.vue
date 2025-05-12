@@ -17,6 +17,8 @@ import DepartmentChart from "../components/department-chart/DepartmentChart.vue"
       <MovieGenreChart></MovieGenreChart>
       <DepartmentChart></DepartmentChart>
     </div>
+    <div class="bar-charts-container">
+    </div>
   </div>
 </template>
 
