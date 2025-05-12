@@ -121,7 +121,7 @@ watch([selectedGenre, selectedViewMode], async () => {
 
 <template>
   <div class="genre-chart">
-    <h1 class="title">Gender Distribution by Movie Genre</h1>
+    <h1 class="title">Movie Genre</h1>
 
     <!-- Dropdowns for selecting a genre and view mode -->
     <div class="selectors">
