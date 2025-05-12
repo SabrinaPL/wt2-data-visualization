@@ -51,12 +51,12 @@ async function fetchDataForSelectedCountry() {
   }
 
   // Transform the breakdown data
-  countryData.value = rawData.breakdown.map(
-    (item: { gender: number; count: number; percentage: number }) => ({
-      gender: genderMapping[item.gender],
-      value: selectedViewMode.value === "count" ? item.count : item.percentage,
-    })
-  );
+  countryData.value[genderStatisticsStore.selectedCountry] = rawData.breakdown.map(
+  (item: { gender: number; count: number; percentage: number }) => ({
+    gender: genderMapping[item.gender],
+    value: selectedViewMode.value === "count" ? item.count : item.percentage,
+  })
+);
 
   console.log("Country data for selected country:", countryData.value);
 }
@@ -81,7 +81,7 @@ function updateChart() {
           name: "Gender Distribution",
           type: "pie",
           radius: "50%",
-          data: countryData.value.map((item) => ({
+          data: countryData.value[genderStatisticsStore.selectedCountry].map((item) => ({
             value: item.value,
             name: item.gender,
             itemStyle: {
