@@ -217,5 +217,51 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
           );
         }
       },
+
+      async fetchYearGenderStatistics() {
+        // Check if the data is already cached
+        if (this.yearGenderStatistics.length > 0) {
+          console.log("Year statistics have already been fetched and cached");
+          return;
+        }
+
+        this.isLoading = true;
+        this.error = null;
+
+        try {
+          const genderStatisticsByYear =
+            await genderStatisticsService.fetchYearGenderStatistics();
+
+          this.yearGenderStatistics = genderStatisticsByYear;
+        } catch (error) {
+          this.error =
+          "Failed to fetch gender statistics by movie production year";
+          console.error("Error fetching year statistics:", error);
+        } finally {
+          this.isLoading = false;
+        }
+      },
+
+      getStatisticsByYear(year: string) {
+        console.log("Fetching year data...");
+
+        // Check if the year data is already cached
+        const yearData = this.yearGenderStatistics.find(
+          (stat: any) => stat.year === year
+        );
+
+        console.log("Year data:", yearData);
+
+        if (yearData) {
+          return yearData;
+        } else {
+          console.error(
+            "Failed to fetch year statistics for the specified year"
+          );
+          throw new Error(
+            "Failed to fetch year statistics for the specified year"
+          );
+        }
+      }
     },
   });

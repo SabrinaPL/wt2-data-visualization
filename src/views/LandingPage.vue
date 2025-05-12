@@ -4,6 +4,7 @@ import MapChart from "../components/map-chart/MapChart.vue";
 import CountryChart from "../components/country-chart/CountryChart.vue";
 import MovieGenreChart from "../components/genre-chart/MovieGenreChart.vue";
 import DepartmentChart from "../components/department-chart/DepartmentChart.vue";
+import ProductionYearChart from "../components/year-chart/ProductionYearChart.vue";
 </script>
 
 <template>
@@ -18,6 +19,7 @@ import DepartmentChart from "../components/department-chart/DepartmentChart.vue"
       <DepartmentChart></DepartmentChart>
     </div>
     <div class="bar-charts-container">
+      <ProductionYearChart></ProductionYearChart>
     </div>
   </div>
 </template>
