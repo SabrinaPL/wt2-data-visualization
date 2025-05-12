@@ -2,6 +2,7 @@
 import Dashboard from "./Dashboard.vue";
 import MapChart from "../components/map-chart/MapChart.vue";
 import CountryChart from "../components/country-chart/CountryChart.vue";
+import MovieGenreChart from "../components/genre-chart/MovieGenreChart.vue";
 </script>
 
 <template>
@@ -10,6 +11,9 @@ import CountryChart from "../components/country-chart/CountryChart.vue";
     <div class="charts-container">
       <MapChart></MapChart>
       <CountryChart></CountryChart>
+    </div>
+    <div class="genre-chart-container">
+      <MovieGenreChart></MovieGenreChart>
     </div>
   </div>
 </template>
@@ -27,5 +31,12 @@ import CountryChart from "../components/country-chart/CountryChart.vue";
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
+}
+
+.genre-chart-container {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 </style>

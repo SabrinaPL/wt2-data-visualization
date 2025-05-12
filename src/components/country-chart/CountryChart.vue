@@ -66,7 +66,7 @@ function updateChart() {
   if (chartInstance && chartRef.value) {
     const option: echarts.EChartsOption = {
       title: {
-        text: `Gender Distribution in ${getCountryNameByCode(genderStatisticsStore.selectedCountry)}`,
+        text: `Gender Distribution in ${getCountryNameByCode(genderStatisticsStore.selectedCountry)} (${selectedViewMode.value})`,
         left: "center",
       },
       tooltip: {
