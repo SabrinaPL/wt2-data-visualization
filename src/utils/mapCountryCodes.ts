@@ -10,6 +10,9 @@ export const countryCodes = [
   'UG', 'SK', 'TH', 'MG', 'SY', 'JO', 'LA', 'HR', 'JP'
 ];
 
+/**
+ * This function takes a country code and returns the corresponding country name.
+ */
 const countryCodeToName: Record<string, string> = {
   MA: 'Morocco',
   BT: 'Bhutan',
@@ -176,10 +179,19 @@ const countryNameToCode: Record<string, string> = Object.entries(countryCodeToNa
   {} as Record<string, string>
 );
 
+/**
+ * This function takes a country name and returns the corresponding country code.
+ * @param countryName - The country name to look up.
+ */
 export function getCountryCodeByName(countryName: string): string | undefined {
   return countryNameToCode[countryName];
 }
 
+/**
+ * 
+ * This function takes a country code and returns the corresponding country name.
+ * @param countryCode - The country code to look up.
+ */
 export function getCountryNameByCode(countryCode: string): string | undefined {
   return countryCodeToName[countryCode];
 }

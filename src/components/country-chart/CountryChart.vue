@@ -1,3 +1,7 @@
+/**
+ * This component is used to visualize gender distribution data 
+ * by movie production country in the form of a pie chart.
+ */
 <script lang="ts" setup>
 import * as echarts from "echarts";
 import { ref, onMounted, watch } from "vue";
@@ -34,6 +38,9 @@ const genderColors: Record<string, string> = {
 
 const isLoading = ref(true);
 
+/**
+ * Function to fetch and transform data for the selected country.
+ */
 async function fetchDataForSelectedCountry() {
   try {
     await genderStatisticsStore.fetchCountryGenderStatistics();

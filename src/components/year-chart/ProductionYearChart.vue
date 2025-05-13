@@ -1,3 +1,7 @@
+/**
+* This component is used to visualize gender distribution data 
+* by movie production (release) year in the form of an interactive line chart.
+*/
 <script lang="ts" setup>
 import * as echarts from "echarts";
 import { ref, onMounted, watch } from "vue";
@@ -26,6 +30,9 @@ const intervals = [
   { label: "2011-2020", value: "2011-2020" },
 ];
 
+/**
+ * Fetch and transform gender distribution data for movie production (release) year.
+ */
 async function fetchYearData() {
   try {
     await genderStatisticsStore.fetchYearGenderStatistics();
@@ -60,6 +67,9 @@ async function fetchYearData() {
   }
 }
 
+/**
+ * Updates the chart with the latest data.
+ */
 function updateChart() {
   if (chartInstance && chartRef.value) {
     const option: echarts.EChartsOption = {

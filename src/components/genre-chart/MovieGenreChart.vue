@@ -1,3 +1,7 @@
+/**
+ * This component visualizes gender distribution data by movie genre
+ * using a bar chart.
+ */
 <script lang="ts" setup>
 import * as echarts from "echarts";
 import { ref, onMounted, watch } from "vue";
@@ -21,7 +25,9 @@ const genreData = ref<{ men: number; women: number; undefined: number }>({
 
 const isLoading = ref(true);
 
-// Fetch and transform data for the selected genre
+/**
+ * Fetch and transform data for the selected genre.
+ */
 async function fetchGenreData() {
   try {
     await genderStatisticsStore.fetchGenreGenderStatistics();
@@ -65,7 +71,9 @@ async function fetchGenreData() {
   }
 }
 
-// Update the bar chart
+/**
+ * Updates the chart with the latest data.
+ */
 function updateChart() {
   if (chartInstance && chartRef.value) {
     const option: echarts.EChartsOption = {

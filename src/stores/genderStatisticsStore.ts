@@ -17,6 +17,10 @@ export const useGenderStatisticsStore = defineStore("genderStatistics", {
     error: null as string | null,
   }),
 
+  /** 
+   * Actions are methods to perform operations on the state.
+   * These actions fetch gender statistics data by calling the service methods.
+  */
   actions: {
     async fetchCountryGenderStatistics() {
       // Check if the data is already cached

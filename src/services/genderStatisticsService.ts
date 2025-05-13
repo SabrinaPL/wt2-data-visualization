@@ -16,6 +16,10 @@ export class GenderStatisticsService {
     }
   }
 
+  /**
+   *
+   * Calls the RESTful Movies API to fetch gender statistics data by genre.
+   */
   async fetchGenreGenderStatistics() {
     try {
       const response = await axios.get(
@@ -28,6 +32,10 @@ export class GenderStatisticsService {
     }
   }
 
+  /**
+   *
+   * Calls the RESTful Movies API to fetch gender statistics data by department.
+   */
   async fetchDepartmentGenderStatistics() {
     try {
       const response = await axios.get(
@@ -40,6 +48,10 @@ export class GenderStatisticsService {
     }
   }
 
+  /**
+   *
+   * Calls the RESTful Movies API to fetch gender statistics data by year.
+   */
   async fetchYearGenderStatistics() {
     try {
       const response = await axios.get(
@@ -52,6 +64,10 @@ export class GenderStatisticsService {
     }
   }
 
+  /**
+   *
+   * Calls the RESTful Movies API to fetch gender statistics data by company.
+   */
   async fetchCompanyGenderStatistics() {
     try {
       const response = await axios.get(

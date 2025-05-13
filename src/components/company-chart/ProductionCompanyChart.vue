@@ -1,3 +1,7 @@
+/**
+ * Component that represents a bar chart to visualize gender distribution 
+ * by movie production company data.
+ */
 <script lang="ts" setup>
 import * as echarts from "echarts";
 import { ref, onMounted } from "vue";
@@ -13,6 +17,9 @@ const companyData = ref<
 
 const isLoading = ref(true);
 
+/**
+ * Function to fetch and transform data for the bar chart.
+ */
 async function fetchCompanyData() {
   try {
     await genderStatisticsStore.fetchCompanyGenderStatistics();
@@ -42,6 +49,9 @@ async function fetchCompanyData() {
   }
 }
 
+/**
+ * Updates the chart with the latest data.
+ */
 function updateChart() {
   if (chartInstance && chartRef.value) {
     const option: echarts.EChartsOption = {

@@ -1,3 +1,7 @@
+/**
+* This component is used to visualize gender distribution data 
+* by movie production country in the form of an interactive map chart.
+*/
 <script lang="ts" setup>
 import * as echarts from "echarts";
 import worldJson from "../../public/map/world.json";

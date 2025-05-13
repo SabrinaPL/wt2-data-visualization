@@ -1,3 +1,7 @@
+/**
+ * This component is used to visualize gender distribution data 
+ * by movie department in the form of a bar chart.
+ */
 <script lang="ts" setup>
 import * as echarts from "echarts";
 import { ref, onMounted, watch } from "vue";
@@ -22,6 +26,9 @@ const selectedMode = ref<string>("percentage"); // Default mode is percentage
 
 const isLoading = ref(true);
 
+/**
+ * Funnction to fetch and transform department data for the bar chart.
+ */
 async function fetchDepartmentData() {
   try {
     await genderStatisticsStore.fetchDepartmentGenderStatistics();
@@ -61,6 +68,9 @@ async function fetchDepartmentData() {
   }
 }
 
+/**
+ * Updates the chart with the latest data.
+ */
 function updateChart() {
   if (chartInstance && chartRef.value) {
     const option: echarts.EChartsOption = {
