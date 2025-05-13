@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import * as echarts from 'echarts';
-import { ref, onMounted, watch } from 'vue';
-import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
+import * as echarts from "echarts";
+import { ref, onMounted, watch } from "vue";
+import { useGenderStatisticsStore } from "../../stores/genderStatisticsStore";
 
 // Reference to the bar chart container
 const chartRef = ref<HTMLDivElement | null>(null);
@@ -11,8 +11,8 @@ let chartInstance: echarts.ECharts | null = null;
 const genderStatisticsStore = useGenderStatisticsStore();
 
 // Reactive variables
-const selectedGenre = ref<string>('Action'); // Default selected genre
-const selectedViewMode = ref<string>('count'); // Default view mode (count or percentage)
+const selectedGenre = ref<string>("Action"); // Default selected genre
+const selectedViewMode = ref<string>("count"); // Default view mode (count or percentage)
 const genreData = ref<{ men: number; women: number; undefined: number }>({
   men: 0,
   women: 0,
@@ -23,34 +23,46 @@ const isLoading = ref(true);
 
 // Fetch and transform data for the selected genre
 async function fetchGenreData() {
-  await genderStatisticsStore.fetchGenreGenderStatistics();
+  try {
+    await genderStatisticsStore.fetchGenreGenderStatistics();
 
-  const rawData = genderStatisticsStore.genreGenderStatistics.find(
-    (item: any) => item.genre === selectedGenre.value
-  );
+    const rawData = genderStatisticsStore.genreGenderStatistics.find(
+      (item: any) => item.genre === selectedGenre.value
+    );
 
-  console.log('Raw Genre Data:', rawData);
+    if (!rawData || !rawData.breakdown) {
+      console.error(
+        "No data available for the selected genre:",
+        selectedGenre.value
+      );
+      genreData.value = { men: 0, women: 0, undefined: 0 };
+      return;
+    }
 
-  if (!rawData || !rawData.breakdown) {
-    console.error('No data available for the selected genre:', selectedGenre.value);
-    genreData.value = { men: 0, women: 0, undefined: 0 };
-    return;
+    // Transform the breakdown data based on the selected view mode
+    genreData.value = {
+      men:
+        selectedViewMode.value === "count"
+          ? rawData.breakdown.find((entry: any) => entry.gender === 2)?.count ||
+            0
+          : rawData.breakdown.find((entry: any) => entry.gender === 2)
+              ?.percentage || 0,
+      women:
+        selectedViewMode.value === "count"
+          ? rawData.breakdown.find((entry: any) => entry.gender === 1)?.count ||
+            0
+          : rawData.breakdown.find((entry: any) => entry.gender === 1)
+              ?.percentage || 0,
+      undefined:
+        selectedViewMode.value === "count"
+          ? rawData.breakdown.find((entry: any) => entry.gender === 0)?.count ||
+            0
+          : rawData.breakdown.find((entry: any) => entry.gender === 0)
+              ?.percentage || 0,
+    };
+  } catch (error) {
+    console.error("Error fetching genre data:", error);
   }
-
-  // Transform the breakdown data based on the selected view mode
-  genreData.value = {
-    men: selectedViewMode.value === 'count'
-      ? rawData.breakdown.find((entry: any) => entry.gender === 2)?.count || 0
-      : rawData.breakdown.find((entry: any) => entry.gender === 2)?.percentage || 0,
-    women: selectedViewMode.value === 'count'
-      ? rawData.breakdown.find((entry: any) => entry.gender === 1)?.count || 0
-      : rawData.breakdown.find((entry: any) => entry.gender === 1)?.percentage || 0,
-    undefined: selectedViewMode.value === 'count'
-      ? rawData.breakdown.find((entry: any) => entry.gender === 0)?.count || 0
-      : rawData.breakdown.find((entry: any) => entry.gender === 0)?.percentage || 0,
-  };
-
-  console.log('Transformed Genre Data:', genreData.value);
 }
 
 // Update the bar chart
@@ -59,34 +71,39 @@ function updateChart() {
     const option: echarts.EChartsOption = {
       title: {
         text: `Gender Distribution for ${selectedGenre.value} (${selectedViewMode.value})`,
-        left: 'center',
+        left: "center",
       },
       tooltip: {
-        trigger: 'axis',
+        trigger: "axis",
         axisPointer: {
-          type: 'shadow',
+          type: "shadow",
         },
         formatter: (params: any) => {
-          const unit = selectedViewMode.value === 'count' ? 'Count' : 'Percentage';
+          const unit =
+            selectedViewMode.value === "count" ? "Count" : "Percentage";
           return `${params[0].name}: ${params[0].value} ${unit}`;
         },
       },
       xAxis: {
-        type: 'category',
-        data: ['Men', 'Women', 'Undefined'],
+        type: "category",
+        data: ["Men", "Women", "Undefined"],
       },
       yAxis: {
-        type: 'value',
-        name: selectedViewMode.value === 'count' ? 'Count' : 'Percentage',
+        type: "value",
+        name: selectedViewMode.value === "count" ? "Count" : "Percentage",
       },
       series: [
         {
-          name: selectedViewMode.value === 'count' ? 'Count' : 'Percentage',
-          type: 'bar',
-          data: [genreData.value.men, genreData.value.women, genreData.value.undefined],
+          name: selectedViewMode.value === "count" ? "Count" : "Percentage",
+          type: "bar",
+          data: [
+            genreData.value.men,
+            genreData.value.women,
+            genreData.value.undefined,
+          ],
           itemStyle: {
             color: (params: any) => {
-              const colors = ['#2471A3', '#2ECC71', '#F4D03F']; // Blue, Green, Yellow
+              const colors = ["#2471A3", "#2ECC71", "#F4D03F"]; // Blue, Green, Yellow
               return colors[params.dataIndex];
             },
           },
@@ -128,7 +145,11 @@ watch([selectedGenre, selectedViewMode], async () => {
       <div class="genre-selector">
         <label for="genre">Select a Genre:</label>
         <select id="genre" v-model="selectedGenre">
-          <option v-for="item in genderStatisticsStore.genreGenderStatistics" :key="item.genre" :value="item.genre">
+          <option
+            v-for="item in genderStatisticsStore.genreGenderStatistics"
+            :key="item.genre"
+            :value="item.genre"
+          >
             {{ item.genre }}
           </option>
         </select>
@@ -149,7 +170,7 @@ watch([selectedGenre, selectedViewMode], async () => {
     </div>
 
     <!-- Bar chart container -->
-    <div ref="chartRef" style="width: 100%; height: 400px;"></div>
+    <div ref="chartRef" style="width: 100%; height: 400px"></div>
   </div>
 </template>
 

@@ -1,117 +1,137 @@
 <script lang="ts" setup>
-import * as echarts from 'echarts';
-import { ref, onMounted, watch } from 'vue';
-import { useGenderStatisticsStore } from '../../stores/genderStatisticsStore';
+import * as echarts from "echarts";
+import { ref, onMounted, watch } from "vue";
+import { useGenderStatisticsStore } from "../../stores/genderStatisticsStore";
 
 const chartRef = ref<HTMLDivElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
 const genderStatisticsStore = useGenderStatisticsStore();
-const departmentData = ref<{ department: string; men: number; women: number; undefined: number; menCount: number; womenCount: number; undefinedCount: number }[]>([]);
-const selectedMode = ref<string>('percentage'); // Default mode is percentage
+const departmentData = ref<
+  {
+    department: string;
+    men: number;
+    women: number;
+    undefined: number;
+    menCount: number;
+    womenCount: number;
+    undefinedCount: number;
+  }[]
+>([]);
+const selectedMode = ref<string>("percentage"); // Default mode is percentage
 
 const isLoading = ref(true);
 
 async function fetchDepartmentData() {
-  await genderStatisticsStore.fetchDepartmentGenderStatistics();
+  try {
+    await genderStatisticsStore.fetchDepartmentGenderStatistics();
 
-  const rawData = genderStatisticsStore.departmentGenderStatistics;
+    const rawData = genderStatisticsStore.departmentGenderStatistics;
 
-  console.log('Raw Department Data:', rawData);
+    // Transform the raw data into a format suitable for the bar chart
+    departmentData.value = rawData.map((item: any) => {
+      const breakdown = item.breakdown || []; // Access the breakdown array
 
-  // Transform the raw data into a format suitable for the bar chart
-  departmentData.value = rawData.map((item: any) => {
-    const breakdown = item.breakdown || []; // Access the breakdown array
+      const men =
+        breakdown.find((entry: any) => entry.gender === 2)?.percentage || 0;
+      const women =
+        breakdown.find((entry: any) => entry.gender === 1)?.percentage || 0;
+      const undefined =
+        breakdown.find((entry: any) => entry.gender === 0)?.percentage || 0;
 
-    const men = breakdown.find((entry: any) => entry.gender === 2)?.percentage || 0;
-    const women = breakdown.find((entry: any) => entry.gender === 1)?.percentage || 0;
-    const undefined = breakdown.find((entry: any) => entry.gender === 0)?.percentage || 0;
+      const menCount =
+        breakdown.find((entry: any) => entry.gender === 2)?.count || 0;
+      const womenCount =
+        breakdown.find((entry: any) => entry.gender === 1)?.count || 0;
+      const undefinedCount =
+        breakdown.find((entry: any) => entry.gender === 0)?.count || 0;
 
-    const menCount = breakdown.find((entry: any) => entry.gender === 2)?.count || 0;
-    const womenCount = breakdown.find((entry: any) => entry.gender === 1)?.count || 0;
-    const undefinedCount = breakdown.find((entry: any) => entry.gender === 0)?.count || 0;
-
-    return {
-      department: item.department, // Use the department name
-      men,
-      women,
-      undefined,
-      menCount,
-      womenCount,
-      undefinedCount,
-    };
-  });
-
-  console.log('Transformed Department Data:', departmentData.value);
+      return {
+        department: item.department, // Use the department name
+        men,
+        women,
+        undefined,
+        menCount,
+        womenCount,
+        undefinedCount,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching department data:", error);
+  }
 }
 
 function updateChart() {
   if (chartInstance && chartRef.value) {
     const option: echarts.EChartsOption = {
       title: {
-        text: `Gender Distribution by Department (${selectedMode.value === 'percentage' ? 'Percentage' : 'Count'})`,
-        left: 'center',
+        text: `Gender Distribution by Department (${selectedMode.value === "percentage" ? "Percentage" : "Count"})`,
+        left: "center",
       },
       tooltip: {
-        trigger: 'axis',
+        trigger: "axis",
         axisPointer: {
-          type: 'shadow',
+          type: "shadow",
         },
         formatter: (params: any) => {
-          const unit = selectedMode.value === 'percentage' ? '%' : 'Count';
-          return params.map((item: any) => `${item.seriesName}: ${item.value} ${unit}`).join('<br>');
+          const unit = selectedMode.value === "percentage" ? "%" : "Count";
+          return params
+            .map((item: any) => `${item.seriesName}: ${item.value} ${unit}`)
+            .join("<br>");
         },
       },
       legend: {
-        bottom: '10%',
+        bottom: "10%",
       },
       grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
+        left: "3%",
+        right: "4%",
+        bottom: "3%",
         containLabel: true,
       },
       xAxis: {
-        type: 'value',
-        name: selectedMode.value === 'percentage' ? '%' : 'Count',
-        max: selectedMode.value === 'percentage' ? 100 : undefined,
+        type: "value",
+        name: selectedMode.value === "percentage" ? "%" : "Count",
+        max: selectedMode.value === "percentage" ? 100 : undefined,
       },
       yAxis: {
-        type: 'category',
+        type: "category",
         data: departmentData.value.map((item) => item.department), // Department names
       },
       series: [
         {
-          name: 'Men',
-          type: 'bar',
-          stack: 'total',
+          name: "Men",
+          type: "bar",
+          stack: "total",
           data: departmentData.value.map((item) =>
-            selectedMode.value === 'percentage' ? item.men : item.menCount
+            selectedMode.value === "percentage" ? item.men : item.menCount
           ),
           itemStyle: {
-            color: '#2471A3',
+            color: "#2471A3",
           },
         },
         {
-          name: 'Women',
-          type: 'bar',
-          stack: 'total',
+          name: "Women",
+          type: "bar",
+          stack: "total",
           data: departmentData.value.map((item) =>
-            selectedMode.value === 'percentage' ? item.women : item.womenCount
+            selectedMode.value === "percentage" ? item.women : item.womenCount
           ),
           itemStyle: {
-            color: '#2ECC71',
+            color: "#2ECC71",
           },
         },
         {
-          name: 'Undefined',
-          type: 'bar',
-          stack: 'total',
+          name: "Undefined",
+          type: "bar",
+          stack: "total",
           data: departmentData.value.map((item) =>
-            selectedMode.value === 'percentage' ? item.undefined : item.undefinedCount
+            selectedMode.value === "percentage"
+              ? item.undefined
+              : item.undefinedCount
           ),
           itemStyle: {
-            color: '#F4D03F',
+            color: "#F4D03F",
           },
         },
       ],
@@ -159,7 +179,7 @@ onMounted(async () => {
     </div>
 
     <!-- Bar chart container -->
-    <div ref="chartRef" style="width: 100%; height: 600px;"></div>
+    <div ref="chartRef" style="width: 100%; height: 600px"></div>
   </div>
 </template>
 

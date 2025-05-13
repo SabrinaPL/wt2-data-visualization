@@ -35,30 +35,34 @@ const genderColors: Record<string, string> = {
 const isLoading = ref(true);
 
 async function fetchDataForSelectedCountry() {
-  await genderStatisticsStore.fetchCountryGenderStatistics();
+  try {
+    await genderStatisticsStore.fetchCountryGenderStatistics();
 
-  const rawData = genderStatisticsStore.getStatisticsByCountry(
-    genderStatisticsStore.selectedCountry
-  );
-
-  if (!rawData || !rawData.breakdown) {
-    console.error(
-      "No data available for the selected country:",
+    const rawData = genderStatisticsStore.getStatisticsByCountry(
       genderStatisticsStore.selectedCountry
     );
-    countryData.value = {};
-    return;
+
+    if (!rawData || !rawData.breakdown) {
+      console.error(
+        "No data available for the selected country:",
+        genderStatisticsStore.selectedCountry
+      );
+      countryData.value = {};
+      return;
+    }
+
+    // Transform the breakdown data
+    countryData.value[genderStatisticsStore.selectedCountry] =
+      rawData.breakdown.map(
+        (item: { gender: number; count: number; percentage: number }) => ({
+          gender: genderMapping[item.gender],
+          value:
+            selectedViewMode.value === "count" ? item.count : item.percentage,
+        })
+      );
+  } catch (error) {
+    console.error("Error fetching country data:", error);
   }
-
-  // Transform the breakdown data
-  countryData.value[genderStatisticsStore.selectedCountry] = rawData.breakdown.map(
-  (item: { gender: number; count: number; percentage: number }) => ({
-    gender: genderMapping[item.gender],
-    value: selectedViewMode.value === "count" ? item.count : item.percentage,
-  })
-);
-
-  console.log("Country data for selected country:", countryData.value);
 }
 
 // Pie Chart (inspired by example code from: https://echarts.apache.org/examples/en/editor.html?c=pie-simple&lang=ts)
@@ -81,13 +85,15 @@ function updateChart() {
           name: "Gender Distribution",
           type: "pie",
           radius: "50%",
-          data: countryData.value[genderStatisticsStore.selectedCountry].map((item) => ({
-            value: item.value,
-            name: item.gender,
-            itemStyle: {
-              color: genderColors[item.gender],
-            },
-          })),
+          data: countryData.value[genderStatisticsStore.selectedCountry].map(
+            (item) => ({
+              value: item.value,
+              name: item.gender,
+              itemStyle: {
+                color: genderColors[item.gender],
+              },
+            })
+          ),
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
